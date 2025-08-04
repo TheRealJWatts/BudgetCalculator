@@ -175,6 +175,22 @@ header {
   border-radius: 5px;
 }
 
+/* Improved color picker accessibility */
+.form-control-color {
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.form-control-color:focus {
+  border-color: #007bff !important;
+  outline: 2px solid #007bff !important;
+  outline-offset: 2px !important;
+}
+
+.form-control-color:hover {
+  border-color: #0056b3;
+}
+
 .budget-input {
   background-color: #444;
   color: white;
@@ -567,8 +583,49 @@ header {
   color: #007bff;
 }
 
+/* Accessibility improvements for category colors */
+.category-color-indicator {
+  border: 2px solid #fff !important;
+  box-shadow: 0 0 0 1px #333 !important;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .category-name span {
+    border: 2px solid currentColor !important;
+    padding: 4px 8px !important;
+  }
+  
+  .category-name span:focus {
+    outline: 3px solid #fff !important;
+    outline-offset: 2px !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .category-name span,
+  .progress-fill {
+    transition: none !important;
+  }
+}
+
+/* Save indicator styles */
+.save-indicator {
+  transition: color 0.3s ease;
+}
+
+.save-indicator.saving {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
 .category-name input {
-  background-color: #333;
+  background-color: #F0E0E0;
   color: white;
   border: 1px solid #007bff;
   border-radius: 3px;
