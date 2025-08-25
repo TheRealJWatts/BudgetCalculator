@@ -1,5 +1,4 @@
 name = "budget-calculator"
-main = "src/index.js"
 compatibility_date = "2024-01-01"
 
 [env.production]
@@ -8,48 +7,30 @@ name = "budget-calculator-prod"
 [env.staging]
 name = "budget-calculator-staging"
 
-[build]
-command = "npm run build"
-output_dir = "build"
-
-[site]
-bucket = "./build"
-
-[build.upload]
-format = "service-worker"
+# Pages configuration
+[pages]
+# Build command for Pages
+build.command = "npm run build"
+# Output directory for Pages
+build.output_dir = "build"
+# Root directory for Pages
+build.root = "."
 
 # Environment variables
 [vars]
 NODE_ENV = "production"
 
-# Secrets (set these via wrangler secret put)
-# [secrets]
-# API_KEY = ""
+# Analytics
+[analytics_engine]
+binding = "ANALYTICS"
 
-# KV namespaces (if needed)
+# Optional: Add KV namespaces if you want to store budget data
 # [[kv_namespaces]]
 # binding = "BUDGET_DATA"
 # id = "your-kv-namespace-id"
 # preview_id = "your-preview-kv-namespace-id"
 
-# Durable Objects (if needed)
-# [[durable_objects.bindings]]
-# name = "BUDGET_SESSION"
-# class_name = "BudgetSession"
-
-# R2 storage (if needed)
+# Optional: Add R2 storage if you want to store files
 # [[r2_buckets]]
 # binding = "BUDGET_FILES"
 # bucket_name = "budget-calculator-files"
-
-# Cron triggers (if needed)
-# [triggers]
-# crons = ["0 0 * * *"] # Daily at midnight
-
-# Workers AI (if needed)
-# [ai]
-# binding = "AI"
-
-# Analytics
-[analytics_engine]
-binding = "ANALYTICS"
