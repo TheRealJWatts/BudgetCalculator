@@ -1,20 +1,8 @@
 name = "budget-calculator"
 compatibility_date = "2024-01-01"
 
-[env.production]
-name = "budget-calculator-prod"
-
-[env.staging]
-name = "budget-calculator-staging"
-
 # Pages configuration
-[pages]
-# Build command for Pages
-build.command = "npm run build"
-# Output directory for Pages
-build.output_dir = "build"
-# Root directory for Pages
-build.root = "."
+pages_build_output_dir = "build"
 
 # Environment variables
 [vars]
