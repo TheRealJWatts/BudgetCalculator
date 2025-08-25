@@ -205,6 +205,39 @@ header {
   border-color: #007bff;
 }
 
+/* Ensure proper spacing for input groups in table */
+.input-group {
+  width: 100%;
+}
+
+.input-group .form-control {
+  width: 100%;
+}
+
+.input-group .btn {
+  white-space: nowrap;
+}
+
+/* Progress bar container spacing */
+.progress-container {
+  width: 100%;
+}
+
+/* Category name column spacing */
+.category-name {
+  width: 100%;
+}
+
+/* Color picker column spacing */
+.color-picker-column {
+  width: 100%;
+}
+
+/* Action column spacing */
+.action-column {
+  width: 100%;
+}
+
 .total-row {
   font-weight: bold;
   background-color: #007bff !important;
@@ -268,6 +301,8 @@ header {
   border: 1px solid #333;
   max-width: 400px;
   width: 100%;
+  overflow: visible;
+  position: relative;
 }
 
 .pie-chart-container h3 {
@@ -278,7 +313,10 @@ header {
 
 .pie-chart {
   display: block;
-  margin: 0 auto 20px;
+  margin: 0 auto;
+  overflow: visible;
+  max-width: 100%;
+  height: auto;
 }
 
 .chart-legend {
@@ -462,7 +500,195 @@ header {
   .visualization-section {
     flex: 1;
   }
+  
+  .pie-chart-container {
+    max-width: 320px;
+  }
 }
+
+@media (max-width: 767px) {
+  .budget-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .budget-table-section {
+    flex: none;
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .visualization-section {
+    flex: none;
+    width: 100%;
+    margin-top: 2rem;
+  }
+  
+  .pie-chart-container {
+    max-width: 100%;
+    margin: 0 auto;
+  }
+  
+  .budget-table {
+    font-size: 0.9rem;
+    width: 100%;
+    margin: 0;
+  }
+  
+  .budget-table th,
+  .budget-table td {
+    padding: 8px 4px;
+    white-space: normal;
+    word-wrap: break-word;
+    vertical-align: middle;
+  }
+  
+  .budget-table th:first-child,
+  .budget-table td:first-child {
+    width: 25%;
+  }
+  
+  .budget-table th:nth-child(2),
+  .budget-table td:nth-child(2) {
+    width: 20%;
+  }
+  
+  .budget-table th:nth-child(3),
+  .budget-table td:nth-child(3) {
+    width: 25%;
+  }
+  
+  .budget-table th:nth-child(4),
+  .budget-table td:nth-child(4) {
+    width: 20%;
+  }
+  
+  .budget-table th:nth-child(5),
+  .budget-table td:nth-child(5) {
+    width: 10%;
+  }
+  
+  .progress-text {
+    font-size: 0.8rem;
+  }
+  
+  .projected-totals {
+    max-width: 100%;
+  }
+  
+  .pie-chart-container {
+    padding: 15px;
+  }
+  
+  .budget-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .drag-handle {
+    font-size: 1rem;
+  }
+  
+  .color-picker {
+    width: 25px;
+    height: 25px;
+  }
+  
+  .time-frame-selector {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .projected-item {
+    flex-direction: column;
+    gap: 5px;
+    text-align: center;
+  }
+  
+  /* Remove horizontal scroll and center table */
+  #calcTable {
+    width: 100%;
+    overflow: visible;
+  }
+  
+  /* Make table responsive */
+  #calcTable .table {
+    margin: 0;
+    width: 100%;
+  }
+}
+
+/* Extra small screens - adjust table layout */
+@media (max-width: 575px) {
+  .budget-table {
+    font-size: 0.8rem;
+  }
+  
+  .budget-table th,
+  .budget-table td {
+    padding: 6px 3px;
+    font-size: 0.75rem;
+  }
+  
+  .budget-table th:first-child,
+  .budget-table td:first-child {
+    width: 30%;
+  }
+  
+  .budget-table th:nth-child(2),
+  .budget-table td:nth-child(2) {
+    width: 18%;
+  }
+  
+  .budget-table th:nth-child(3),
+  .budget-table td:nth-child(3) {
+    width: 25%;
+  }
+  
+  .budget-table th:nth-child(4),
+  .budget-table td:nth-child(4) {
+    width: 17%;
+  }
+  
+  .budget-table th:nth-child(5),
+  .budget-table td:nth-child(5) {
+    width: 10%;
+  }
+  
+  .input-group {
+    width: 100%;
+  }
+  
+  .input-group .form-control {
+    font-size: 0.75rem;
+    padding: 4px 6px;
+  }
+  
+  .input-group .btn {
+    font-size: 0.75rem;
+    padding: 4px 6px;
+  }
+  
+  .progress-container {
+    width: 100%;
+  }
+  
+  .progress-text {
+    font-size: 0.7rem;
+  }
+  
+  .drag-handle {
+    font-size: 0.9rem;
+  }
+  
+  .color-picker {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+
 
 @media (max-width: 767px) {
   .budget-table {

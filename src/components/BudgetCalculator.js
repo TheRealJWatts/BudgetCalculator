@@ -23,6 +23,7 @@ const BudgetCalculator = () => {
   const [editingCategory, setEditingCategory] = useState(null);
   const [editingCategoryName, setEditingCategoryName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [inputModes, setInputModes] = useState({}); // Track input mode for each category
 
   // Cookie management functions
   const saveToCookies = (data) => {
@@ -66,6 +67,7 @@ const BudgetCalculator = () => {
       });
       setCategoryOrder(['bills', 'food', 'save']);
       setTimeFrame('12');
+      setInputModes({});
       alert('Saved data has been cleared!');
     } catch (error) {
       console.error('Error clearing cookies:', error);
@@ -91,6 +93,9 @@ const BudgetCalculator = () => {
       if (savedData.timeFrame) {
         setTimeFrame(savedData.timeFrame);
       }
+      if (savedData.inputModes) {
+        setInputModes(savedData.inputModes);
+      }
     }
   }, []);
 
@@ -101,20 +106,81 @@ const BudgetCalculator = () => {
       budgetCategories,
       categoryColors,
       categoryOrder,
-      timeFrame
+      timeFrame,
+      inputModes
     };
     saveToCookies(dataToSave);
-  }, [monthlyIncome, budgetCategories, categoryColors, categoryOrder, timeFrame]);
+  }, [monthlyIncome, budgetCategories, categoryColors, categoryOrder, timeFrame, inputModes]);
 
   const handleIncomeChange = (e) => {
     setMonthlyIncome(e.target.value);
   };
 
   const handleCategoryChange = (category, value) => {
-    setBudgetCategories(prev => ({
+    const currentMode = inputModes[category] || 'dollar';
+    
+    if (currentMode === 'percentage') {
+      // Handle percentage input
+      const percentageValue = parseFloat(value.replace('%', ''));
+      
+      if (!isNaN(percentageValue) && percentageValue >= 0 && percentageValue <= 100) {
+        // Calculate dollar amount based on monthly income
+        const monthlyIncomeValue = parseFloat(monthlyIncome) || 0;
+        const dollarAmount = (percentageValue / 100) * monthlyIncomeValue;
+        setBudgetCategories(prev => ({
+          ...prev,
+          [category]: dollarAmount.toString()
+        }));
+      } else {
+        // Invalid percentage, just store the original value
+        setBudgetCategories(prev => ({
+          ...prev,
+          [category]: value
+        }));
+      }
+    } else {
+      // Regular dollar amount
+      setBudgetCategories(prev => ({
+        ...prev,
+        [category]: value
+      }));
+    }
+  };
+
+  const toggleInputMode = (category) => {
+    const currentMode = inputModes[category] || 'dollar';
+    const newMode = currentMode === 'dollar' ? 'percentage' : 'dollar';
+    
+    setInputModes(prev => ({
       ...prev,
-      [category]: value
+      [category]: newMode
     }));
+    
+    // Convert current value to the new mode
+    const currentValue = budgetCategories[category];
+    if (currentValue) {
+      const currentAmount = parseFloat(currentValue);
+      const monthlyIncomeValue = parseFloat(monthlyIncome) || 0;
+      
+      if (newMode === 'percentage' && monthlyIncomeValue > 0) {
+        // Convert dollar to percentage
+        const percentage = (currentAmount / monthlyIncomeValue) * 100;
+        setBudgetCategories(prev => ({
+          ...prev,
+          [category]: percentage.toFixed(1)
+        }));
+      } else if (newMode === 'dollar') {
+        // Convert percentage to dollar (if it was in percentage mode)
+        if (currentMode === 'percentage') {
+          const percentageValue = parseFloat(currentValue);
+          const dollarAmount = (percentageValue / 100) * monthlyIncomeValue;
+          setBudgetCategories(prev => ({
+            ...prev,
+            [category]: dollarAmount.toFixed(2)
+          }));
+        }
+      }
+    }
   };
 
   const addCategory = () => {
@@ -317,6 +383,19 @@ const BudgetCalculator = () => {
     return (parseFloat(categoryValue) / parseFloat(monthlyIncome)) * 100;
   };
 
+  const getCategoryDisplayValue = (categoryValue) => {
+    if (!categoryValue) return '';
+    
+    const percentage = getCategoryPercentage(categoryValue);
+    const dollarAmount = parseFloat(categoryValue) || 0;
+    
+    if (percentage > 0 && percentage <= 100) {
+      return `${dollarAmount.toFixed(2)} (${percentage.toFixed(1)}%)`;
+    }
+    
+    return dollarAmount.toFixed(2);
+  };
+
   const getCategoryColor = (category) => {
     return categoryColors[category] || '#6C5CE7';
   };
@@ -347,77 +426,98 @@ const BudgetCalculator = () => {
     const remaining = calculateRemaining();
     const income = parseFloat(monthlyIncome) || 0;
     if (income === 0) return <div className="alert alert-info">Enter your monthly income to see budget distribution</div>;
+    
     let currentAngle = 0;
-    const radius = 80;
+    const radius = 100;
     const centerX = 100;
     const centerY = 100;
+    const svgSize = 200; // Increased from 200 to give more padding
+    
     return (
       <div className="card mt-4">
         <div className="card-body">
           <h3 className="card-title mb-3">Budget Distribution</h3>
           <div className="row">
-            <div className="col-md-6 d-flex justify-content-center align-items-center">
-              <svg width="200" height="200" className="pie-chart">
-                {/* Render allocated categories in order */}
-                {categoryOrder.map(category => {
-                  const value = budgetCategories[category];
-                  if (!value || parseFloat(value) === 0) return null;
-                  const percentage = (parseFloat(value) / income) * 100;
-                  const angle = (percentage / 100) * 360;
-                  const startAngle = currentAngle;
-                  const endAngle = currentAngle + angle;
-                  const x1 = centerX + radius * Math.cos(startAngle * Math.PI / 180);
-                  const y1 = centerY + radius * Math.sin(startAngle * Math.PI / 180);
-                  const x2 = centerX + radius * Math.cos(endAngle * Math.PI / 180);
-                  const y2 = centerY + radius * Math.sin(endAngle * Math.PI / 180);
-                  const largeArcFlag = angle > 180 ? 1 : 0;
-                  const pathData = [
-                    `M ${centerX} ${centerY}`,
-                    `L ${x1} ${y1}`,
-                    `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-                    'Z'
-                  ].join(' ');
-                  currentAngle += angle;
-                  return (
-                    <path
-                      key={category}
-                      d={pathData}
-                      fill={getCategoryColor(category)}
-                      stroke="#fff"
-                      strokeWidth="2"
-                    />
-                  );
-                })}
-                {/* Render unallocated/remaining slice */}
-                {remaining > 0 && (() => {
-                  const percentage = (remaining / income) * 100;
-                  const angle = (percentage / 100) * 360;
-                  const startAngle = currentAngle;
-                  const endAngle = currentAngle + angle;
-                  const x1 = centerX + radius * Math.cos(startAngle * Math.PI / 180);
-                  const y1 = centerY + radius * Math.sin(startAngle * Math.PI / 180);
-                  const x2 = centerX + radius * Math.cos(endAngle * Math.PI / 180);
-                  const y2 = centerY + radius * Math.sin(endAngle * Math.PI / 180);
-                  const largeArcFlag = angle > 180 ? 1 : 0;
-                  const pathData = [
-                    `M ${centerX} ${centerY}`,
-                    `L ${x1} ${y1}`,
-                    `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-                    'Z'
-                  ].join(' ');
-                  return (
-                    <path
-                      key="unallocated"
-                      d={pathData}
-                      fill="#6c757d"
-                      stroke="#fff"
-                      strokeWidth="2"
-                    />
-                  );
-                })()}
-              </svg>
+            <div className="col-12 col-md-6 d-flex justify-content-center align-items-center mb-3 mb-md-0">
+              <div className="pie-chart-container" style={{ 
+                width: '100%', 
+                maxWidth: '280px',
+                overflow: 'visible',
+                padding: '20px'
+              }}>
+                <svg 
+                  width={svgSize} 
+                  height={svgSize} 
+                  className="pie-chart"
+                  style={{ 
+                    display: 'block',
+                    margin: '0 auto',
+                    overflow: 'visible'
+                  }}
+                  viewBox={`0 0 ${svgSize} ${svgSize}`}
+                  preserveAspectRatio="xMidYMid meet"
+                >
+                  {/* Render allocated categories in order */}
+                  {categoryOrder.map(category => {
+                    const value = budgetCategories[category];
+                    if (!value || parseFloat(value) === 0) return null;
+                    const percentage = (parseFloat(value) / income) * 100;
+                    const angle = (percentage / 100) * 360;
+                    const startAngle = currentAngle;
+                    const endAngle = currentAngle + angle;
+                    const x1 = centerX + radius * Math.cos(startAngle * Math.PI / 180);
+                    const y1 = centerY + radius * Math.sin(startAngle * Math.PI / 180);
+                    const x2 = centerX + radius * Math.cos(endAngle * Math.PI / 180);
+                    const y2 = centerY + radius * Math.sin(endAngle * Math.PI / 180);
+                    const largeArcFlag = angle > 180 ? 1 : 0;
+                    const pathData = [
+                      `M ${centerX} ${centerY}`,
+                      `L ${x1} ${y1}`,
+                      `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+                      'Z'
+                    ].join(' ');
+                    currentAngle += angle;
+                    return (
+                      <path
+                        key={category}
+                        d={pathData}
+                        fill={getCategoryColor(category)}
+                        stroke="#fff"
+                        strokeWidth="2"
+                      />
+                    );
+                  })}
+                  {/* Render unallocated/remaining slice */}
+                  {remaining > 0 && (() => {
+                    const percentage = (remaining / income) * 100;
+                    const angle = (percentage / 100) * 360;
+                    const startAngle = currentAngle;
+                    const endAngle = currentAngle + angle;
+                    const x1 = centerX + radius * Math.cos(startAngle * Math.PI / 180);
+                    const y1 = centerY + radius * Math.sin(startAngle * Math.PI / 180);
+                    const x2 = centerX + radius * Math.cos(endAngle * Math.PI / 180);
+                    const y2 = centerY + radius * Math.sin(endAngle * Math.PI / 180);
+                    const largeArcFlag = angle > 180 ? 1 : 0;
+                    const pathData = [
+                      `M ${centerX} ${centerY}`,
+                      `L ${x1} ${y1}`,
+                      `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+                      'Z'
+                    ].join(' ');
+                    return (
+                      <path
+                        key="unallocated"
+                        d={pathData}
+                        fill="#6c757d"
+                        stroke="#fff"
+                        strokeWidth="2"
+                      />
+                    );
+                  })()}
+                </svg>
+              </div>
             </div>
-            <div className="col-md-6">
+            <div className="col-12 col-md-6">
               <div className="list-group">
                 {/* Show allocated categories in order */}
                 {categoryOrder.map(category => {
@@ -439,7 +539,7 @@ const BudgetCalculator = () => {
                   <div className="list-group-item d-flex align-items-center">
                     <div 
                       className="rounded me-2"
-                      style={{ width: 18, height: 18, backgroundColor: '#6c757d' }}
+                      style={{ width: 18, height:18, backgroundColor: '#6c757d' }}
                     ></div>
                     <span>Unallocated: {((remaining / income) * 100).toFixed(1)}%</span>
                   </div>
@@ -836,13 +936,29 @@ const BudgetCalculator = () => {
                       )}
                     </td>
                     <td>
-                      <input
-                        type="number"
-                        className="form-control form-control-sm"
-                        value={budgetCategories[category]}
-                        onChange={(e) => handleCategoryChange(category, e.target.value)}
-                        placeholder="0"
-                      />
+                      <div className="input-group input-group-sm">
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={budgetCategories[category]}
+                          onChange={(e) => handleCategoryChange(category, e.target.value)}
+                          placeholder={inputModes[category] === 'percentage' ? "0" : "0"}
+                          title={`Enter ${inputModes[category] === 'percentage' ? 'percentage' : 'dollar amount'}`}
+                        />
+                        <button
+                          type="button"
+                          className={`btn btn-outline-secondary ${inputModes[category] === 'percentage' ? 'active' : ''}`}
+                          onClick={() => toggleInputMode(category)}
+                          title={`Switch to ${inputModes[category] === 'percentage' ? 'dollar' : 'percentage'} mode`}
+                        >
+                          {inputModes[category] === 'percentage' ? '%' : '$'}
+                        </button>
+                      </div>
+                      {budgetCategories[category] && (
+                        <small className="text-muted d-block mt-1">
+                          {getCategoryDisplayValue(budgetCategories[category])}
+                        </small>
+                      )}
                     </td>
                     <td>
                       {renderProgressBar(category, budgetCategories[category])}
@@ -909,12 +1025,22 @@ const BudgetCalculator = () => {
                     />
                   </td>
                   <td>
-                    <input
-                      type="number"
-                      className="form-control form-control-sm"
-                      disabled
-                      placeholder="0"
-                    />
+                    <div className="input-group input-group-sm">
+                      <input
+                        type="text"
+                        className="form-control"
+                        disabled
+                        placeholder="0"
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary"
+                        disabled
+                        title="Switch input mode"
+                      >
+                        $
+                      </button>
+                    </div>
                   </td>
                   <td>
                     <div className="progress-container">
