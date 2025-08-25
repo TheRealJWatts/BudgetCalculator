@@ -1,0 +1,56 @@
+name = "budget-calculator"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+[env.production]
+name = "budget-calculator-prod"
+
+[env.staging]
+name = "budget-calculator-staging"
+
+[build]
+command = "npm run build"
+output_dir = "build"
+
+[site]
+bucket = "./build"
+entry-point = "."
+
+[build.upload]
+format = "service-worker"
+
+# Environment variables
+[vars]
+NODE_ENV = "production"
+
+# Secrets (set these via wrangler secret put)
+# [secrets]
+# API_KEY = ""
+
+# KV namespaces (if needed)
+# [[kv_namespaces]]
+# binding = "BUDGET_DATA"
+# id = "your-kv-namespace-id"
+# preview_id = "your-preview-kv-namespace-id"
+
+# Durable Objects (if needed)
+# [[durable_objects.bindings]]
+# name = "BUDGET_SESSION"
+# class_name = "BudgetSession"
+
+# R2 storage (if needed)
+# [[r2_buckets]]
+# binding = "BUDGET_FILES"
+# bucket_name = "budget-calculator-files"
+
+# Cron triggers (if needed)
+# [triggers]
+# crons = ["0 0 * * *"] # Daily at midnight
+
+# Workers AI (if needed)
+# [ai]
+# binding = "AI"
+
+# Analytics
+[analytics_engine]
+binding = "ANALYTICS"
